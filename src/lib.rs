@@ -3,7 +3,6 @@ extern crate log;
 
 use image::GenericImageView;
 use std::path::PathBuf;
-use time::PreciseTime;
 
 pub mod ops;
 pub mod types;
@@ -51,36 +50,30 @@ fn create_nonlinear_scale_space(
     image: &GrayFloatImage,
     options: Config,
 ) {
-    debug!("Creating first evolution.");
-    let start = PreciseTime::now();
+    trace!("Creating first evolution.");
     evolutions[0].Lt = gaussian_blur(image, options.base_scale_offset as f32);
-    debug!("Gaussian blur took {}.", start.to(PreciseTime::now()));
+    trace!("Gaussian blur finished.");
     evolutions[0].Lsmooth = evolutions[0].Lt.clone();
     debug!(
         "Convolving first evolution with sigma={} Gaussian.",
         options.base_scale_offset
     );
-    let start = PreciseTime::now();
     let mut contrast_factor = ops::contrast_factor::compute_contrast_factor(
         &evolutions[0].Lsmooth,
         options.contrast_percentile,
         1.0f64,
         options.contrast_factor_num_bins,
     );
-    debug!(
-        "Computing contrast factor took {}.",
-        start.to(PreciseTime::now())
-    );
+    trace!("Computing contrast factor finished.");
     debug!(
         "Contrast percentile={}, Num bins={}, Initial contrast factor={}",
         options.contrast_percentile, options.contrast_factor_num_bins, contrast_factor
     );
     for i in 1..evolutions.len() {
-        debug!("Creating evolution {}.", i);
+        trace!("Creating evolution {}.", i);
         if evolutions[i].octave > evolutions[i - 1].octave {
-            let start = PreciseTime::now();
             evolutions[i].Lt = evolutions[i - 1].Lt.half_size();
-            debug!("Half-sizing took {}", start.to(PreciseTime::now()));
+            trace!("Half-sizing done.");
             contrast_factor *= 0.75;
             debug!(
                 "New image size: {}x{}, new contrast factor: {}",
@@ -91,30 +84,20 @@ fn create_nonlinear_scale_space(
         } else {
             evolutions[i].Lt = evolutions[i - 1].Lt.clone();
         }
-        let start = PreciseTime::now();
         evolutions[i].Lsmooth = gaussian_blur(&evolutions[i].Lt, 1.0f32);
-        debug!("Gaussian blur took {}.", start.to(PreciseTime::now()));
-        let start = PreciseTime::now();
+        trace!("Gaussian blur finished.");
         evolutions[i].Lx = ops::derivatives::scharr(&evolutions[i].Lsmooth, true, false, 1);
-        debug!(
-            "Computing derivative Lx took {}.",
-            start.to(PreciseTime::now())
-        );
+        trace!("Computing derivative Lx done.");
         evolutions[i].Ly = ops::derivatives::scharr(&evolutions[i].Lsmooth, false, true, 1);
-        let start = PreciseTime::now();
         evolutions[i].Lflow = pm_g2(&evolutions[i].Lx, &evolutions[i].Ly, contrast_factor);
-        debug!("Lflow took {}", start.to(PreciseTime::now()));
+        trace!("Lflow finished.");
         evolutions[i].Lstep =
             GrayFloatImage::new(evolutions[i].Lt.width(), evolutions[i].Lt.height());
         for j in 0..evolutions[i].fed_tau_steps.len() {
+            trace!("Starting diffusion step.");
             let step_size: f64 = evolutions[i].fed_tau_steps[j];
-            let start = PreciseTime::now();
             ops::nonlinear_diffusion::calculate_step(&mut evolutions[i], step_size);
-            debug!(
-                "Used step size {}, took {}",
-                step_size,
-                start.to(PreciseTime::now())
-            );
+            trace!("Diffusion step finished with step size {}", step_size);
         }
     }
 }
@@ -128,12 +111,8 @@ fn create_nonlinear_scale_space(
 /// The resulting keypoints.
 ///
 fn find_image_keypoints(evolutions: &mut Vec<EvolutionStep>, options: Config) -> Vec<Keypoint> {
-    let start = PreciseTime::now();
     ops::detector_response::detector_response(evolutions, options);
-    debug!(
-        "Computing detector response took {}.",
-        start.to(PreciseTime::now())
-    );
+    trace!("Computing detector response finished.");
     ops::scale_space_extrema::detect_keypoints(evolutions, options)
 }
 
@@ -177,19 +156,11 @@ pub fn extract_features(
     );
     let mut evolutions =
         types::evolution::allocate_evolutions(input_image.width(), input_image.height(), options);
-    let start = PreciseTime::now();
     create_nonlinear_scale_space(&mut evolutions, &float_image, options);
-    debug!(
-        "Creating scale space took {}.",
-        start.to(PreciseTime::now())
-    );
+    trace!("Creating scale space finished.");
     let keypoints = find_image_keypoints(&mut evolutions, options);
-    let start = PreciseTime::now();
     let descriptors = ops::descriptors::extract_descriptors(&evolutions, &keypoints, options);
-    debug!(
-        "Computing descriptors took {}.",
-        start.to(PreciseTime::now())
-    );
+    trace!("Computing descriptors finished.");
     (evolutions, keypoints, descriptors)
 }
 
@@ -212,12 +183,12 @@ pub fn extract_features(
 /// * `lowes_ratio` - The ratio between the best and second-best match L2 norm required
 /// * `ransac_trials` - The number of trials to run RANSAC
 /// * `ransac_epsilon_inliers` - The maximum error to accept for an inlier
-/// 
+///
 /// For a high number of matches with some error, choose:
 /// * `lowes_ratio` - `0.86`
 /// * `ransac_trials` - `1000`
 /// * `ransac_epsilon_inliers` - `3.0`
-/// 
+///
 /// If you have different performance constraints or input imagery,
 /// experiment with the parameters. If you have more points, you may need to
 /// lower the `lowes_ratio` to, at most, about `0.75`. You can also decrease
@@ -258,12 +229,8 @@ pub fn match_features(
     ransac_trials: usize,
     ransac_epsilon_inliers: f32,
 ) -> Vec<Match> {
-    let output = ops::feature_matching::descriptor_match(
-        descriptors_0,
-        descriptors_1,
-        10000,
-        lowes_ratio,
-    );
+    let output =
+        ops::feature_matching::descriptor_match(descriptors_0, descriptors_1, 10000, lowes_ratio);
     remove_outliers(
         &keypoints_0,
         &keypoints_1,

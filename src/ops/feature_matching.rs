@@ -1,6 +1,5 @@
 use crate::types::feature_match::Match;
 use crate::types::keypoint::Descriptor;
-use time::PreciseTime;
 /// Match two sets of keypoints and descriptors. The
 /// Hamming distance is used to match the descriptor sets,
 /// using a brute force algorithm.
@@ -26,7 +25,6 @@ pub fn descriptor_match(
     distance_threshold: usize,
     lowes_ratio: f64,
 ) -> Vec<Match> {
-    let start = PreciseTime::now();
     let mut output: Vec<Match> = vec![];
     let mut filtered_by_threshold = 0;
     let mut filtered_by_lowes = 0;
@@ -56,7 +54,7 @@ pub fn descriptor_match(
         // (d0) ^ (1/2) = lowes_ratio * d1 ^ (1/2)
         // ((d0) ^ (1/2) = lowes_ratio * d1 ^ (1/2)) ^ 2
         // d0 = lowes_ratio ^ 2 * d1
-        // 
+        //
         // The last reduction step can be done because hamming distance is never negative.
         if (min_distance as f64) < (second_to_min_distance as f64) * lowes_ratio.powi(2) {
             if min_distance < (distance_threshold as usize) {
@@ -81,14 +79,13 @@ pub fn descriptor_match(
     }
     mean /= (filtered_by_threshold + output.len()) as f64;
     debug!(
-        "{} matches, {} filtered by threshold, {} filtered by lowes, dist min={}, mean={}, max={}, took {}.",
+        "{} matches, {} filtered by threshold, {} filtered by lowes, dist min={}, mean={}, max={}.",
         output.len(),
         filtered_by_threshold,
         filtered_by_lowes,
         min,
         mean,
         max,
-        start.to(PreciseTime::now()),
     );
     output
 }
