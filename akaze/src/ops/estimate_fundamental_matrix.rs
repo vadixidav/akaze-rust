@@ -22,7 +22,6 @@ pub fn estimate_fundamental_matrix(
 ) -> Option<Matrix3<f32>> {
     debug_assert!(matches.len() == 8);
     let mut a: DMatrix<f32> = DMatrix::zeros(8, 9);
-    let mut b: DMatrix<f32> = DMatrix::zeros(8, 1);
     for (i, match_i) in matches.iter().enumerate() {
         *a.index_mut((i, 0)) =
             keypoints_0[match_i.index_0].point.0 * keypoints_1[match_i.index_1].point.0;
@@ -37,7 +36,6 @@ pub fn estimate_fundamental_matrix(
         *a.index_mut((i, 6)) = keypoints_1[match_i.index_1].point.0;
         *a.index_mut((i, 7)) = keypoints_1[match_i.index_1].point.1;
         *a.index_mut((i, 8)) = 1f32;
-        *b.index_mut((i, 0)) = 0f32;
     }
     let svd = SVD::new(a, true, true);
     if svd.rank(epsilon) != 8 {
