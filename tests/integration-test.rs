@@ -13,10 +13,7 @@ use akaze::types::keypoint::draw_keypoints_to_image;
 /// Test data is included with this repository. This
 /// function helps find it for testing.
 fn locate_test_data() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .join("test-data")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test-data")
 }
 
 #[test]
