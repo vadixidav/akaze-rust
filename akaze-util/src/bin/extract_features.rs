@@ -8,12 +8,12 @@ extern crate image;
 extern crate serde;
 extern crate serde_json;
 use akaze::types::evolution::{write_evolutions, Config};
-use akaze::types::keypoint::{draw_keypoints_to_image};
+use akaze::types::keypoint::draw_keypoints_to_image;
+use akaze_util::*;
 use clap::{App, Arg};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::time::SystemTime;
-use akaze_util::*;
 
 fn main() {
     let matches = App::new("KAZE extractor.")
@@ -83,7 +83,10 @@ fn main() {
     }
     let (evolutions, keypoints, descriptors) =
         akaze::extract_features(Path::new(input_path).to_owned(), options);
-    let features = Features { keypoints, descriptors };
+    let features = Features {
+        keypoints,
+        descriptors,
+    };
     serialize_features_to_file(&features, output_path).expect("failed to write out features");
     info!("Done, extracted {} features.", features.keypoints.len());
     match matches.value_of("debug_path") {
@@ -91,15 +94,15 @@ fn main() {
             info!("Writing scale space since --debug_path/-d option was specified.");
             let string_to_pass = val.to_string();
             let path_to_scale_space_dir = std::path::Path::new(&string_to_pass.clone()).to_owned();
-            std::fs::create_dir_all(&string_to_pass.clone()).unwrap();
+            std::fs::create_dir_all(&string_to_pass).unwrap();
             write_evolutions(&evolutions, path_to_scale_space_dir.clone());
             let mut input_image = image::open(Path::new(input_path).to_owned())
                 .unwrap()
                 .to_rgb();
             draw_keypoints_to_image(&mut input_image, &features.keypoints);
-            let mut path_to_keypoint_image = path_to_scale_space_dir.clone();
+            let mut path_to_keypoint_image = path_to_scale_space_dir;
             path_to_keypoint_image.push("keypoints.png");
-            match input_image.save(path_to_keypoint_image.to_owned()) {
+            match input_image.save(path_to_keypoint_image) {
                 Ok(_val) => debug!("Wrote keypoint image successfully."),
                 Err(_e) => debug!("Could not write keypoint image for some reason, skipping."),
             }

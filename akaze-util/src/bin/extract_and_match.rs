@@ -69,7 +69,7 @@ fn main() {
     extractions_0_path.push_str("-extractions_0.cbor");
     let mut extractions_1_path = prefix_string.clone();
     extractions_1_path.push_str("-extractions_1.cbor");
-    let mut matches_path = prefix_string.clone();
+    let mut matches_path = prefix_string;
     matches_path.push_str("-matches.cbor");
 
     let (_, keypoints, descriptors) =
