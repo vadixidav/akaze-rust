@@ -8,7 +8,7 @@ homepage = "https://github.com/indianajohn/akaze-rust/"
 repository = "https://github.com/indianajohn/akaze-rust/"
 readme = "../README.md"
 keywords = ["CV", "vision", "sfm", "features", "descriptors"]
-categories = ["science::robotics", "multimedia::images"]
+categories = ["science::robotics", "multimedia::images", "computer-vision"]
 license = "MIT"
 
 [dependencies]
