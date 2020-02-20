@@ -1,4 +1,3 @@
-use primal;
 use std::f64::consts::PI;
 /// derived from C++ code by Pablo F. Alcantarilla, Jesus Nuevo in the
 /// AKAZE library. Notes from original author of the C++ code:

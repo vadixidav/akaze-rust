@@ -1,5 +1,4 @@
 use image::{DynamicImage, GenericImageView, GrayImage, Pixel, RgbImage};
-use random;
 use random::Source;
 use std::f32;
 use std::path::PathBuf;

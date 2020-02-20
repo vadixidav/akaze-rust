@@ -1,10 +1,8 @@
 use crate::types::feature_match::Match;
 use crate::types::keypoint::Keypoint;
 use nalgebra::{DMatrix, Matrix3, Vector3, SVD};
-use random;
 use random::Source;
 use std::collections::HashSet;
-use std::ops::{Index, IndexMut};
 
 /// Do singular value decomposition to estimate the fundamental matrix
 /// given a set of 8 prospective inliers.

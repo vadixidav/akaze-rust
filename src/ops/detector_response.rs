@@ -2,7 +2,6 @@ use crate::ops::derivatives;
 use crate::types::evolution::Config;
 use crate::types::evolution::EvolutionStep;
 use crate::types::image::{GrayFloatImage, ImageFunctions};
-use num_cpus;
 use scoped_threadpool::Pool;
 
 fn compute_multiscale_derivatives_for_evolution(evolution: &mut EvolutionStep, sigma_size: u32) {

@@ -46,15 +46,15 @@ fn extract_features() {
     match std::env::var("AKAZE_SCALE_SPACE_DIR") {
         Ok(val) => {
             info!("Writing scale space; if you want to skip this step, undefine the env var AKAZE_SCALE_SPACE_DIR");
-            let string_to_pass = val.to_string();
+            let string_to_pass = val;
             let path_to_scale_space_dir = std::path::Path::new(&string_to_pass.clone()).to_owned();
-            std::fs::create_dir_all(&string_to_pass.clone()).unwrap();
+            std::fs::create_dir_all(&string_to_pass).unwrap();
             write_evolutions(&evolutions, path_to_scale_space_dir.clone());
-            let mut input_image = image::open(test_image_path.clone()).unwrap().to_rgb();
+            let mut input_image = image::open(test_image_path).unwrap().to_rgb();
             draw_keypoints_to_image(&mut input_image, &keypoints);
-            let mut path_to_keypoint_image = path_to_scale_space_dir.clone();
+            let mut path_to_keypoint_image = path_to_scale_space_dir;
             path_to_keypoint_image.push("keypoints.png");
-            match input_image.save(path_to_keypoint_image.to_owned()) {
+            match input_image.save(path_to_keypoint_image) {
                 Ok(_val) => debug!("Wrote keypoint image successfully."),
                 Err(_e) => debug!("Could not write keypoint image for some reason, skipping."),
             }
@@ -93,11 +93,11 @@ fn match_features() {
     match std::env::var("AKAZE_SCALE_SPACE_DIR") {
         Ok(val) => {
             info!("Writing scale space; if you want to skip this step, undefine the env var AKAZE_SCALE_SPACE_DIR");
-            let string_to_pass = val.to_string();
+            let string_to_pass = val;
             let path_to_scale_space_dir = std::path::Path::new(&string_to_pass.clone()).to_owned();
-            std::fs::create_dir_all(&string_to_pass.clone()).unwrap();
-            let input_image_0 = image::open(test_image_path_0.clone()).unwrap().to_rgb();
-            let input_image_1 = image::open(test_image_path_1.clone()).unwrap().to_rgb();
+            std::fs::create_dir_all(&string_to_pass).unwrap();
+            let input_image_0 = image::open(test_image_path_0).unwrap().to_rgb();
+            let input_image_1 = image::open(test_image_path_1).unwrap().to_rgb();
             let match_image = draw_matches(
                 &input_image_0,
                 &input_image_1,
@@ -105,9 +105,9 @@ fn match_features() {
                 &keypoints_1,
                 &matches,
             );
-            let mut path_to_matches_image = path_to_scale_space_dir.clone();
+            let mut path_to_matches_image = path_to_scale_space_dir;
             path_to_matches_image.push("matches.png");
-            match match_image.save(path_to_matches_image.to_owned()) {
+            match match_image.save(path_to_matches_image) {
                 Ok(_val) => debug!("Wrote matches image successfully."),
                 Err(_e) => debug!("Could not write matches image for some reason, skipping."),
             }
